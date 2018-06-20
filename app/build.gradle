@@ -61,6 +61,8 @@ dependencies {
     //AAC
     implementation "android.arch.lifecycle:extensions:${android_arch_version}"
 
+    implementation "com.github.arimorty:floatingsearchview:${floating_searchview_version}"
+
     kapt "com.android.databinding:compiler:$kotlin_compiler"
 
     testImplementation 'junit:junit:4.12'

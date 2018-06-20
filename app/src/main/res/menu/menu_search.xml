@@ -1,0 +1,15 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/action_location"
+        android:icon="@drawable/ic_history_black_24dp"
+        android:orderInCategory="2"
+        android:title="location"
+        app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/action_change_colors"
+        android:icon="@drawable/ic_settings"
+        android:orderInCategory="4"
+        android:title="Change"
+        app:showAsAction="ifRoom" />
+</menu>

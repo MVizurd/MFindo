@@ -73,8 +73,6 @@ class DashBoardActivity : FragmentActivity(),
         mFusedLocationClient.removeLocationUpdates(mLocationCallback)
     }
 
-
-    @SuppressLint("MissingPermission")
     private fun initializeMap() {
         val locationRequest = LocationRequest()
                 .apply {
