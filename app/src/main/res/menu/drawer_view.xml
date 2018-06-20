@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/nav_dashboard"
+            android:icon="@drawable/ic_near_me"
+            android:title="@string/dashboard" />
+        <item
+            android:id="@+id/nav_chat_room"
+            android:icon="@drawable/ic_chat_black"
+            android:title="@string/active_chat_room" />
+        <item
+            android:id="@+id/nav_settings"
+            android:icon="@drawable/ic_settings_black_24dp"
+            android:title="@string/settings" />
+
+    </group>
+</menu>

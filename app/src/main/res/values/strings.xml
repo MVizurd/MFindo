@@ -1,4 +1,9 @@
 <resources>
     <string name="app_name">MFindo</string>
     <string name="map_api_key">AIzaSyCvlCU2hXhR1PjmXxbiu9fBzGpLfN_UkEY</string>
+
+    <!-- Nav drawer Items -->
+    <string name="dashboard">Dashboard</string>
+    <string name="active_chat_room">Active Chat Room</string>
+    <string name="settings">Settings</string>
 </resources>
