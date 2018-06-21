@@ -16,6 +16,7 @@ import android.view.MenuItem
 import android.widget.Toast
 import com.vizurd.mfindo.dashboard.DashBoardFragment
 import com.vizurd.mfindo.utils.addFragment
+import com.vizurd.mfindo.utils.replaceFragment
 
 
 class ContainerActivity : AppCompatActivity() {
@@ -43,7 +44,7 @@ class ContainerActivity : AppCompatActivity() {
 
             when (menuItem.itemId) {
                 R.id.nav_dashboard -> {
-//                    addFragment(DashBoardFragment(), R.id.content_frame)
+                    replaceFragment(DashBoardFragment(), R.id.content_frame)
                 }
             }
 

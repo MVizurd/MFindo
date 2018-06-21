@@ -43,6 +43,7 @@ dependencies {
     //Maps
     implementation "com.google.android.gms:play-services-maps:${google_map_service_version}"
     implementation "com.google.android.gms:play-services-location:${google_map_service_version}"
+    implementation "com.google.android.gms:play-services-places:${google_map_service_version}"
 
     //RxJava
     implementation "io.reactivex.rxjava2:rxjava:${rxjava_version}"
