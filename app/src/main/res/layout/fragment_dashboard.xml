@@ -22,6 +22,7 @@
     </fragment>
 
     <android.support.v7.widget.CardView
+        android:id="@+id/cardSearch"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="8dp"
@@ -37,21 +38,29 @@
 
     </android.support.v7.widget.CardView>
 
-    <com.arlib.floatingsearchview.FloatingSearchView
-        android:id="@+id/floating_search_view"
+    <br.com.simplepass.loading_button_lib.customViews.CircularProgressButton
+        android:id="@+id/btnFindCompanion"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_gravity="center"
+        android:layout_margin="8dp"
+        android:background="@color/colorPrimaryDark"
+        android:gravity="center"
+        android:text="Find Companion"
+        android:textColor="@color/white"
+        android:textSize="18sp"
+        android:visibility="gone"
+        app:spinning_bar_color="#FFF"
+        app:spinning_bar_padding="6dp"
+        app:spinning_bar_width="4dp" />
+
+    <View
+        android:id="@+id/animateView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:visibility="gone"
-        app:floatingSearch_close_search_on_keyboard_dismiss="false"
-        app:floatingSearch_dimBackground="false"
-        app:floatingSearch_dismissOnOutsideTouch="true"
-        app:floatingSearch_leftActionMode="noLeftAction"
-        app:floatingSearch_menu="@menu/menu_search"
-        app:floatingSearch_searchBarMarginLeft="@dimen/search_view_inset"
-        app:floatingSearch_searchBarMarginRight="@dimen/search_view_inset"
-        app:floatingSearch_searchBarMarginTop="@dimen/search_view_inset"
-        app:floatingSearch_searchHint="Search..."
-        app:floatingSearch_showSearchKey="true"
-        app:floatingSearch_suggestionsListAnimDuration="250" />
+        android:background="@color/colorPrimaryDark"
+        android:visibility="invisible" />
 
 </RelativeLayout>

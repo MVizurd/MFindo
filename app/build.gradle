@@ -10,7 +10,7 @@ android {
     compileSdkVersion 27
     defaultConfig {
         applicationId "com.vizurd.mfindo"
-        minSdkVersion 15
+        minSdkVersion 17
         targetSdkVersion 27
         multiDexEnabled true
         versionCode 1
@@ -67,6 +67,8 @@ dependencies {
     kapt "com.android.databinding:compiler:$kotlin_compiler"
 
     implementation "org.greenrobot:eventbus:${eventbus_version}"
+
+    implementation "br.com.simplepass:loading-button-android:${animate_loader_button_version}"
 
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
