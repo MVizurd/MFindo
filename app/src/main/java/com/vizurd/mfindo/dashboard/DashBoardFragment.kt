@@ -3,9 +3,12 @@ package com.vizurd.mfindo.dashboard
 import android.annotation.SuppressLint
 import android.arch.lifecycle.ViewModelProviders
 import android.content.Intent
+import android.location.Address
+import android.location.Geocoder
 import android.location.Location
 import android.location.LocationManager
 import android.os.Bundle
+import android.os.Handler
 import android.os.Looper
 import android.support.v4.app.ActivityOptionsCompat
 import android.support.v4.app.Fragment
@@ -13,6 +16,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageButton
 import android.widget.RelativeLayout
 import androidx.core.graphics.drawable.toBitmap
 import br.com.simplepass.loading_button_lib.customViews.CircularProgressButton
@@ -35,7 +39,9 @@ import com.vizurd.mfindo.commuteList.CommuteListActivity
 import com.vizurd.mfindo.core.di.DIHandler
 import com.vizurd.mfindo.dashboard.di.DashBoardComponent
 import com.vizurd.mfindo.dashboard.models.DashBoardViewModel
+import com.vizurd.mfindo.handlers.GeocodeWorkerThread
 import kotlinx.android.synthetic.main.fragment_dashboard.*
+import java.util.*
 import javax.inject.Inject
 
 
@@ -48,13 +54,18 @@ class DashBoardFragment : Fragment(),
 
     private lateinit var mMap: GoogleMap
     private var mLastKnownLocation: Location? = null
-    private val DEFAULT_ZOOM = 15f
+    private val DEFAULT_ZOOM = 17f
     private val TAG = DashBoardFragment::class.java.canonicalName
     private lateinit var mapFragment: SupportMapFragment
-    private lateinit var autocompleteFragment: PlaceAutocompleteFragment
+    private lateinit var startPlaceFragment: PlaceAutocompleteFragment
+    private lateinit var destPlaceFragment: PlaceAutocompleteFragment
     private val dashBoardComponent: DashBoardComponent by lazy { DIHandler.getDashBoardComponent() }
     private lateinit var destinationLoc: Location
+    private lateinit var startLocation: Location
     private lateinit var btnFindCompanion: CircularProgressButton
+    private var startPlaceActive: Boolean = true
+    private lateinit var geoCodeHandler: GeocodeWorkerThread
+
     //    TODO: Make use of this to make api calls
     private val viewModel: DashBoardViewModel by lazy { ViewModelProviders.of(this).get(DashBoardViewModel::class.java) }
 
@@ -63,10 +74,28 @@ class DashBoardFragment : Fragment(),
         dashBoardComponent.inject(this)
         mapFragment = childFragmentManager
                 .findFragmentById(R.id.map) as SupportMapFragment
-        autocompleteFragment = activity?.fragmentManager!!
-                .findFragmentById(R.id.place_autocomplete_fragment) as PlaceAutocompleteFragment
-        autocompleteFragment.setHint("Search Destination...")
-        autocompleteFragment.setOnPlaceSelectedListener(mPlaceSelectionListener)
+        geoCodeHandler = GeocodeWorkerThread("GeoCodeHandler")
+                .apply { start() }
+        startPlaceFragment = activity?.fragmentManager!!
+                .findFragmentById(R.id.startPlaceFragment) as PlaceAutocompleteFragment
+        with(startPlaceFragment) {
+            setHint("From where ...")
+            setOnPlaceSelectedListener(mPlaceSelectionListener)
+            this.view.findViewById<ImageButton>(R.id.place_autocomplete_search_button).setOnClickListener {
+                moveCameraToLocation(startLocation)
+            }
+        }
+
+        destPlaceFragment = activity?.fragmentManager!!
+                .findFragmentById(R.id.endPlaceFragment) as PlaceAutocompleteFragment
+        with(destPlaceFragment) {
+            setHint("Where to ...")
+            setOnPlaceSelectedListener(mDestPlaceListner)
+            this.view.findViewById<ImageButton>(R.id.place_autocomplete_search_button).setOnClickListener {
+                moveCameraToLocation(destinationLoc)
+            }
+
+        }
         btnFindCompanion = view.findViewById<CircularProgressButton>(R.id.btnFindCompanion)
         btnFindCompanion.setOnClickListener(findCompanionListner)
         mapFragment.getMapAsync(this)
@@ -117,6 +146,8 @@ class DashBoardFragment : Fragment(),
 
     private val findCompanionListner = object : View.OnClickListener {
         override fun onClick(v: View?) {
+            Log.i(TAG, "Start Location -> ${mLastKnownLocation}")
+            Log.i(TAG, "End Location -> ${destinationLoc}")
             with(btnFindCompanion) {
                 startAnimation()
                 postDelayed({
@@ -174,9 +205,11 @@ class DashBoardFragment : Fragment(),
 
     private val mLocationCallback = object : LocationCallback() {
         override fun onLocationResult(locationResult: LocationResult?) {
-            locationResult?.lastLocation?.let {
-                mLastKnownLocation = it
-                moveCameraToLocation(it)
+            locationResult?.lastLocation?.let { loc ->
+                mLastKnownLocation = loc
+                startLocation = loc
+                getAddressFromLocation(loc)
+                moveCameraToLocation(loc)
             }
         }
     }
@@ -184,8 +217,36 @@ class DashBoardFragment : Fragment(),
     private val mCameraMoveListner = object : GoogleMap.OnCameraMoveListener {
         override fun onCameraMove() {
             Log.i("Marker", "map => ${mMap.cameraPosition.target}")
+            val latLng = mMap.cameraPosition.target
+            val location = Location(LocationManager.GPS_PROVIDER)
+                    .apply {
+                        latitude = latLng.latitude
+                        longitude = latLng.longitude
+                    }
+            if (startPlaceActive)
+                startLocation = location
+            else
+                destinationLoc = location
+            getAddressFromLocation(location)
         }
 
+    }
+
+    fun getAddressFromLocation(location: Location) {
+        val task = Runnable {
+            val address = arrayListOf<Address>()
+            Geocoder(activity, Locale.getDefault()).apply {
+                address.addAll(getFromLocation(location.latitude, location.longitude, 1))
+            }
+            val addrText = if (address.size > 0) address[0].getAddressLine(0) else ""
+            Handler(Looper.getMainLooper()).post {
+                if (startPlaceActive)
+                    startPlaceFragment.setText(addrText)
+                else
+                    destPlaceFragment.setText(addrText)
+            }
+        }
+        geoCodeHandler.postTask(task)
     }
 
     private val mPlaceSelectionListener = object : PlaceSelectionListener {
@@ -198,7 +259,9 @@ class DashBoardFragment : Fragment(),
                             longitude = p.latLng.longitude
                         }.apply {
                             moveCameraToLocation(this)
+                            imgPin.setImageDrawable(activity?.resources?.getDrawable(R.drawable.ic_pin_start))
                         }
+                startPlaceActive = true
                 btnFindCompanion.visibility = View.VISIBLE
             }
         }
@@ -208,6 +271,30 @@ class DashBoardFragment : Fragment(),
         }
 
     }
+
+    private val mDestPlaceListner = object : PlaceSelectionListener {
+        override fun onPlaceSelected(place: Place?) {
+            place?.let { p ->
+                Location(LocationManager.GPS_PROVIDER)
+                        .apply {
+                            destinationLoc = this
+                            latitude = p.latLng.latitude
+                            longitude = p.latLng.longitude
+                        }.apply {
+                            moveCameraToLocation(this)
+                            imgPin.setImageDrawable(activity?.resources?.getDrawable(R.drawable.ic_pin_dest))
+                        }
+                startPlaceActive = false
+                btnFindCompanion.visibility = View.VISIBLE
+            }
+        }
+
+        override fun onError(status: Status?) {
+            Log.i(TAG, "An error occurred: " + status)
+        }
+
+    }
+
 
     private fun moveCameraToLocation(location: Location) {
         with(mMap) {
